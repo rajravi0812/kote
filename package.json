@@ -1,0 +1,22 @@
+{
+    "type": "module",
+    "private": true,
+    "name": "rfid",
+    "version": "1.0.0",
+    "main": "acr122u_read_uid_reader.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "start": "node acr122u_read_uid_reader.js"
+    },
+    "devDependencies": {
+        "axios": "^1.7.7",
+        "laravel-vite-plugin": "^0.7.2",
+        "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "bootstrap": "^5.3.3",
+        "chart.js": "^4.4.7",
+        "nfc-pcsc": "^0.8.1"
+    }
+}
