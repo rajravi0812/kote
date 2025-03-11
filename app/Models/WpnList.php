@@ -14,6 +14,7 @@ class WpnList extends Model
         'wpn_tag',
         'wpn_type',
         'regd_no',
+        'wpn_src_id',
         'butt_no',
         'company_id',
         'remarks',
@@ -33,5 +34,10 @@ class WpnList extends Model
     public function wpn_types()
     {
         return $this->belongsTo(WpnType::class, 'wpn_type');
+    }
+
+    public function wpn_source()
+    {
+        return $this->belongsTo(WpnSource::class, 'wpn_src_id');
     }
 }

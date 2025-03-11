@@ -227,4 +227,12 @@ Route::get('indl-weapon-history/{id}',[AdminController::class,'weapon_history'])
 Route::get('weapon-current-history',[AdminController::class,'weapon_current_history'])->name('wpn.current.history');
 Route::get('weapon-issue-history/{id}',[AdminController::class,'weapon_issue_history'])->name('wpn.issue.history');
 
+
+
+// ******************* wpn source *******************//
+ Route::get('manage-wpn-src', [AdminController::class, 'manage_wpn_src'])->name('manage.wpn.src');
+ Route::post('add-wpn-src', [AdminController::class, 'add_wpn_src'])->name('add.wpn.src');
+ Route::post('delete-wpn-src', [AdminController::class, 'delete_wpn_src'])->name('delete.wpn.src');
+ Route::post('update-wpn-src', [AdminController::class, 'update_wpn_src'])->name('update.wpn.src');
+
 });

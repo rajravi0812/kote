@@ -92,6 +92,18 @@
                         </div>
                     </div>
 
+                    <div class="mb-3 row">
+                        <label for="weapon-src" class="form-label col-md-4">Weapon Source:</label>
+                        <div class="col-md-8">
+                            <select id="weapon-src" class="form-select form-control" name="wpn_src_id" required>
+                                <option value="">Select Weapon Source</option>
+                                @foreach ($wpn_src as $src)
+                                    <option value="{{ $src->id }}" {{ $src->id == $wpn->wpn_src_id ? 'selected' : '' }}>{{ $src->wpn_src_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Regd. No -->
                     <div class="mb-3 row">
                         <label for="regd-no" class="form-label col-md-4">Regd. No.:</label>

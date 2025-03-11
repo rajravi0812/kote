@@ -125,6 +125,7 @@
                                                 <th><center><b>S.No</b></center></th>
                                                 <th><center><b>WPN TAG</b></center></th>
                                                 <th><center><b>WPN TYPE</b></center></th>
+                                                <th><center><b>WPN Source</b></center></th>
                                                 <th><center><b>REGD NO.</b></center></th>
                                                 <th><center><b>BUTT NO.</b></center></th>
                                                 <th><center><b>Company</b></center></th>
@@ -140,6 +141,7 @@
                                                 <td><center>{{ ($weapons->currentPage() - 1) * $weapons->perPage() + $loop->iteration }}</center></td>
                                                 <td><center>{{ $product->wpn_tag }}</center></td>
                                                 <td><center>{{ $product->wpn_types->type }}</center></td>
+                                                <td><center>{{ $product->wpn_source->wpn_src_name ?? "" }}</center></td>
                                                 {{-- <td><center><img src="{{ url('storage/app/public/' . $product->product_img) }}" alt="Product Image" width="50"></center></td> --}}
                                                 <td><center>{{ $product->regd_no }}</center></td>
                                                 <td><center>{{ $product->butt_no}}</center></td>

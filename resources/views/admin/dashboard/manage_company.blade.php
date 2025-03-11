@@ -98,6 +98,9 @@
                                         </tbody>
                                        
                                     </table>
+                                    <div class="pagination" style="float:right;">
+                                        {!! $veh_cat->links() !!}
+                                    </div>
                                 </div>
 
                             </div>

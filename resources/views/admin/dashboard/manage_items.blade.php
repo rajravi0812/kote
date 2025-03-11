@@ -119,6 +119,9 @@
                                         </tbody>
                                        
                                     </table>
+                                    <div class="pagination" style="float:right;">
+                                        {!! $items->links() !!}
+                                    </div>
                                 </div>
 
                             </div>

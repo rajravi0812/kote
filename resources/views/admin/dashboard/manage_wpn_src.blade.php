@@ -10,7 +10,7 @@
     <meta name="author" content="">
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon.png">
-    <title>Unit</title>
+    <title>Manage Wpn Source</title>
     <!-- Custom CSS -->
     @include('admin.dashboard.common.header_lib')
 </head>
@@ -31,7 +31,6 @@
         <!-- Topbar header - style you can find in pages.scss -->
         <!-- ============================================================== -->
         @include('admin.dashboard.common.header')
-        <!-- ============================================================== -->
        
         <div class="page-wrapper">
             <!-- ============================================================== -->
@@ -40,21 +39,28 @@
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-12 d-flex no-block align-items-center">
-                        <h4 class="page-title">Manage Unit</h4>
+                        <h4 class="page-title">Manage Wpn Source</h4>
                         <div class="ml-auto text-right">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb">
                                     <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">Unit</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Manage Wpn Source</li>
                                 </ol>
                             </nav>
                         </div>
                     </div>
                 </div>
             </div>
-
+            <!-- ============================================================== -->
+            <!-- End Bread crumb and right sidebar toggle -->
+            <!-- ============================================================== -->
+            <!-- ============================================================== -->
+            <!-- Container fluid  -->
+            <!-- ============================================================== -->
             <div class="container-fluid">
-
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
                 
                 <div class="row">
                     <div class="col-md-2"></div>
@@ -68,18 +74,17 @@
                                         <thead>
                                             <tr>
                                                 <th><center><b>S.No</b></center></th>
-                                                <th><center><b>Unit</b></center></th>
-                                               
+                                                <th><center><b>Wpn Source Name</b></center></th>
                                                 <th><center><b>Action</b></center></th>
+                                               
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @if(!empty($unit))
-                                            @foreach($unit as $request)
+                                            @if(!empty($wpn_src))
+                                            @foreach($wpn_src as $request)
                                             <tr>
-                                                <td><center>{{ ($unit->currentPage() - 1) * $unit->perPage() + $loop->iteration }}</center></td>
-                                                <td id="cat_{{ $request->id }}"><center>{{ $request->unit_name }}</center></td>
-                                           
+                                                <td><center>{{ ($wpn_src->currentPage() - 1) * $wpn_src->perPage() + $loop->iteration }}</center></td>
+                                                <td id="cat_{{ $request->id }}"><center>{{ $request->wpn_src_name }}</center></td>
                                                 <td><center>
                                                     <button rel="{{ $request->id }}" type="button" data-toggle="modal" data-target="#add-edit-event"  class="btn btn-primary btn-sm edit-data">Edit</button>
                                                     <button rel="{{ $request->id }}" type="button" class="btn btn-danger btn-sm btn-delete" data-toggle="modal" data-target="#delete-event" >Delete</button>
@@ -94,7 +99,7 @@
                                        
                                     </table>
                                     <div class="pagination" style="float:right;">
-                                        {!! $unit->links() !!}
+                                        {!! $wpn_src->links() !!}
                                     </div>
                                 </div>
 
@@ -108,20 +113,26 @@
             <div class="modal fade none-border" id="add-new-event">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                    <form action="{{ route('add.unit') }}" method="POST">
+                    <form action="{{ route('add.wpn.src') }}" method="POST">
                         @csrf
                         <div class="modal-header">
-                            <h4 class="modal-title"><strong>Add</strong> Unit</h4>
+                            <h4 class="modal-title"><strong>Add</strong> Wpn Source</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                         </div>
                         <div class="modal-body">
                             
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <label class="control-label">Unit Name</label>
-                                        <input class="form-control form-white" placeholder="Enter name" type="text" name="item_unit_name" />
+                                        <label class="control-label">Wpn Source Name</label>
+                                        <input class="form-control form-white" placeholder="Enter Wpn Source" type="text" name="item_category_name" />
                                     </div>
-                                   
+                                    {{-- <div class="col-md-4">
+                                        <label class="control-label">Status</label>
+                                        <select class="form-control form-white" data-placeholder="Status" name="item_category_status">
+                                            <option value="1">Active</option>
+                                            <option value="0">Inactive</option>
+                                        </select>
+                                    </div> --}}
                                 </div>
                             
                         </div>
@@ -137,17 +148,18 @@
             <div class="modal fade none-border" id="add-edit-event">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                    <form action="{{ route('update.unit') }}" method="POST">
+                    <form action="{{ route('update.wpn.src') }}" method="POST">
                         @csrf
                         <div class="modal-header">
-                            <h4 class="modal-title"><strong>Edit</strong> Unit</h4>
+                            <h4 class="modal-title"><strong>Edit</strong> Wpn Source</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                         </div>
                         <div class="modal-body">
                             
+                               
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <label class="control-label">Unit Name</label>
+                                        <label class="control-label">Wpn Source Name</label>
                                         <input class="form-control form-white" placeholder="Enter name" type="text" id="category_name" name="category_name" />
                                     </div>
                                     {{-- <div class="col-md-4">
@@ -174,14 +186,14 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h4 class="modal-title"><strong>Delete</strong> Unit</h4>
+                            <h4 class="modal-title"><strong>Delete</strong>Wpn Source</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                         </div>
                         <div class="modal-body">
                             Are You Sure Want to Delete
                         </div>
                         <div class="modal-footer">
-                            <form action="{{ route('delete.unit') }}" method="POST">
+                            <form action="{{ route('delete.wpn.src') }}" method="POST">
                                 @csrf
                               <input type='hidden' id="del_id" value="" name="del_id">  
                               <button type="button" class="btn btn-secondary waves-effect " data-dismiss="modal">No</button>
@@ -216,7 +228,7 @@
 
     <script>
          $(document).ready(function(){
-            console.log("testing")
+            // console.log("testing")
             $('.edit-data').click(function(){
                 let id = $(this).attr("rel");
                 let cat_name = $("#cat_" + id).text();

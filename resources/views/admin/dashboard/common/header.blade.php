@@ -207,7 +207,7 @@
                         <a class="dropdown-item" href="{{ route('manage.unit')}}">Manage Unit</a>
                         <a class="dropdown-item" href="{{ route('manage.company')}}">Manage Company</a>
                         <a class="dropdown-item" href="{{ route('manage.wpntype')}}">Manage Wpn Type</a>
-                        {{-- <a class="dropdown-item" href="{{ route('manage.branches')}}">Manage Branches</a>   --}}
+                        <a class="dropdown-item" href="{{ route('manage.wpn.src')}}">Manage Wpn Source</a>  
                         {{-- <a class="dropdown-item" href="{{ route('manage.store')}}">Manage Store</a>
                         <a class="dropdown-item" href="{{ route('manage.items')}}">Manage Items</a>
                         <a class="dropdown-item" href="{{ route('manage.destination')}}">Manage Destination</a> --}}

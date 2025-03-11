@@ -43,6 +43,7 @@ use App\Models\AssignAccessory;
 use App\Models\AssignCard;
 use App\Models\AssignProduct;
 use App\Models\Employee;
+use App\Models\WpnSource;
 
 class AdminController extends Controller
 {
@@ -583,7 +584,8 @@ public function delete_indl(Request $request){
 public function add_wpn(Request $request){
     $wpntype = WpnType::get();
     $company = Company::get();
-    return view('admin.dashboard.add_wpn',compact('company','wpntype'));
+    $wpn_src = WpnSource::get();
+    return view('admin.dashboard.add_wpn',compact('company','wpntype','wpn_src'));
 }
 
 
@@ -608,6 +610,7 @@ public function add_wpnAction(Request $request)
     $request->validate([
         'wpn_tag' => 'required|string|max:255',
         'wpn_type' => 'required|string|max:255',
+        'wpn_src' => 'required|string|max:255',
         'regd_no' => 'required|string|max:255',
         'butt_no' => 'nullable|string|max:255',
         'company_id' => 'required|integer',
@@ -632,6 +635,7 @@ public function add_wpnAction(Request $request)
     WpnList::create([
         'wpn_tag' => $request->wpn_tag,
         'wpn_type' => $request->wpn_type,
+        'wpn_src_id' => $request->wpn_src,
         'regd_no' => $request->regd_no,
         'butt_no' => $request->butt_no,
         'company_id' => $request->company_id,
@@ -702,13 +706,15 @@ public function edit_wpn($id){
     $wpn = WpnList::where('id',$id)->first();
     $wpntype = WpnType::get();
     $company = Company::get();
-    return view('admin.dashboard.edit_wpn', compact('wpn','wpntype','company'));
+    $wpn_src = WpnSource::get();
+    return view('admin.dashboard.edit_wpn', compact('wpn','wpntype','company','wpn_src'));
 } 
 
 public function editWpnAction(Request $request, $id) {
     $validated = $request->validate([
         'wpn_tag' => 'required|string|max:255',
         'wpn_type' => 'required|exists:wpn_types,id',
+        'wpn_src_id' => 'required|exists:wpn_source,id',
         'regd_no' => 'required|string|max:255',
         'butt_no' => 'required|string|max:255',
         'company_id' => 'required|exists:companys,id',
@@ -2848,7 +2854,7 @@ public function allot_wpn_report(Request $request)
 }
 public function wpn_list(Request $request)
 {
-    $query = WpnList::with(['wpn_types', 'company']);
+    $query = WpnList::with(['wpn_types', 'company','wpn_source']);
 
     $filters = $request->only(['wpn_tag', 'wpn_type', 'regd_no', 'butt_no', 'company', 'service']);
 
@@ -2983,5 +2989,48 @@ public function indl_list(Request $request)
     // Return view with data
     return view('admin.dashboard.indl_list', compact('employee', 'ranks', 'units', 'companies', 'filters', 'totalRecords'));
 }
+
+
+// ************** wpn source section ***************//
+
+public function manage_wpn_src(Request $request)
+{   
+    $wpn_src = WpnSource::paginate(20);
+    return view('admin.dashboard.manage_wpn_src',compact('wpn_src'));
+}
+
+public function add_wpn_src(Request $request)
+{
+    $wpn_src = new WpnSource();
+    $wpn_src->wpn_src_name = $request->input('item_category_name');
+    $wpn_src->save();
+    // Redirect with success message
+    return redirect()->back()->with('success', 'Wpn Source Added Successfully');
+}
+
+
+public function delete_wpn_src(Request $request){
+    $request->validate([
+        'del_id' => 'required|integer',
+    ]);
+    $id = $request->input('del_id');
+    // dd($id);
+    $wpn_src = WpnSource::find($id);
+    $wpn_src->delete();
+    return redirect()->back()->with('success', 'Wpn Source Deleted'); 
+}
+
+public function update_wpn_src(Request $request){
+    $request->validate([
+        'cat_id' => 'required|exists:companys,id',
+        'category_name' => 'required|string|max:255',
+    ]);
+
+    $wpn_src = WpnSource::find($request->input('cat_id'));
+    $wpn_src->wpn_src_name = $request->input('category_name'); 
+    $wpn_src->save();
+    return redirect()->route('manage.wpn.src')->with('success', 'Wpn Source Updated');
+}
+
 
 }
