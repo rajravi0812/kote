@@ -363,73 +363,163 @@ $(document).ready(function() {
 
 
 
-      function get_issue_wpn(emp_id) {
-          var wpn_url = '{{ route("wpn.return.indl")}}';
-          console.log(emp_id);
-          $.ajax({
-              url: wpn_url,
-              type: 'POST',
-              data: {
-                  "emp_id": emp_id,
-                  _token: '{{ csrf_token() }}',
-              },
-              dataType: 'json',
-              success: function(list) {
-                  $('#tbody').empty();
-                  if (list.data.length > 0) {
-                      $.each(list.data, function(index, alloted) {
+    //   function get_issue_wpn(emp_id) {
+    //       var wpn_url = '{{ route("wpn.return.indl")}}';
+    //       console.log(emp_id);
+    //       $.ajax({
+    //           url: wpn_url,
+    //           type: 'POST',
+    //           data: {
+    //               "emp_id": emp_id,
+    //               _token: '{{ csrf_token() }}',
+    //           },
+    //           dataType: 'json',
+    //           success: function(list) {
+    //                 console.log(list);
+    //               $('#tbody').empty();
+    //               if (list.data.length > 0) {
+    //                   $.each(list.data, function(index, alloted) {
 
-                          var createdAt = new Date(alloted.created_at);
-                          var formattedDate = ("0" + createdAt.getDate()).slice(-2) + "-" + 
-                              ("0" + (createdAt.getMonth() + 1)).slice(-2) + "-" + 
-                              createdAt.getFullYear() + " " + 
-                              ("0" + createdAt.getHours()).slice(-2) + ":" + 
-                              ("0" + createdAt.getMinutes()).slice(-2) + ":" + 
-                              ("0" + createdAt.getSeconds()).slice(-2);
+    //                       var createdAt = new Date(alloted.created_at);
+    //                       var formattedDate = ("0" + createdAt.getDate()).slice(-2) + "-" + 
+    //                           ("0" + (createdAt.getMonth() + 1)).slice(-2) + "-" + 
+    //                           createdAt.getFullYear() + " " + 
+    //                           ("0" + createdAt.getHours()).slice(-2) + ":" + 
+    //                           ("0" + createdAt.getMinutes()).slice(-2) + ":" + 
+    //                           ("0" + createdAt.getSeconds()).slice(-2);
 
-                          var nature = alloted.nature == 0 ? "Less Than 24hr" : "More Than 24hr"
-                          var row = '<tr class="main-row" data-index="' + index + '" style="background-color:#F2F4FF">' +
-                              '<td>' + (index + 1) + '</td>' +
-                              '<td>' + alloted.type + '</td>' +
-                              '<td>' + alloted.regd_no + '</td>' +
-                              '<td>' + alloted.butt_no + '</td>' +
-                              '<td>' + alloted.wpn_tag + '</td>' +
-                              '<td>' + nature + '</td>' +
-                              '<td>' + alloted.purpose + '</td>' +
-                              '<td>' + formattedDate + '</td>' +
-                              '</tr>';
+    //                       var nature = alloted.nature == 0 ? "Less Than 24hr" : "More Than 24hr"
+    //                       var row = '<tr class="main-row" data-index="' + index + '" style="background-color:#F2F4FF">' +
+    //                           '<td>' + (index + 1) + '</td>' +
+    //                           '<td>' + alloted.type + '</td>' +
+    //                           '<td>' + alloted.regd_no + '</td>' +
+    //                           '<td>' + alloted.butt_no + '</td>' +
+    //                           '<td>' + alloted.wpn_tag + '</td>' +
+    //                           '<td>' + nature + '</td>' +
+    //                           '<td>' + alloted.purpose + '</td>' +
+    //                           '<td>' + formattedDate + '</td>' +
+    //                           '</tr>';
 
-                          var subRow = '<tr class="" data-index="' + index + '" style="background-color:#F2F4FF">' +
-                              '<td colspan="8">' +
-                              '<div class="sub-details">' +
-                              '<label>Mag Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="magissue_' + index + '" id="magissue_' + index + '" value="'+ alloted.megazins +'">' +
-                              '<label>Slings Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="slingsissue_' + index + '" id="slingsissue_' + index + '" value="'+ alloted.slings +'">' +
-                              '<label>Bayonet Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="bayonetissue_' + index + '" id="bayonetissue_' + index + '" value="'+ alloted.bayonet +'">' + '<br>' +
-                              '<label>Mag Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="magret_' + index + '" id="magret_' + index + '" value="">' +
-                              '<label>Slings Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="slingsret_' + index + '" id="slingsret_' + index + '" value="">' +
-                              '<label>Bayonet Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="bayonetret_' + index + '" id="bayonetret_' + index + '" value="">' +
-                              '</div>' +
-                              '</td>' +
-                              '</tr>';
+    //                       var subRow = '<tr class="" data-index="' + index + '" style="background-color:#F2F4FF">' +
+    //                           '<td colspan="8">' +
+    //                           '<div class="sub-details">' +
+    //                           '<label>Mag Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="magissue_' + index + '" id="magissue_' + index + '" value="'+ alloted.megazins +'">' +
+    //                           '<label>Slings Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="slingsissue_' + index + '" id="slingsissue_' + index + '" value="'+ alloted.slings +'">' +
+    //                           '<label>Bayonet Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="bayonetissue_' + index + '" id="bayonetissue_' + index + '" value="'+ alloted.bayonet +'">' + '<br>' +
+    //                           '<label>Mag Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="magret_' + index + '" id="magret_' + index + '" value="">' +
+    //                           '<label>Slings Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="slingsret_' + index + '" id="slingsret_' + index + '" value="">' +
+    //                           '<label>Bayonet Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" name="bayonetret_' + index + '" id="bayonetret_' + index + '" value="">' +
+    //                           '</div>' +
+    //                           '</td>' +
+    //                           '</tr>';
 
-                          $('#tbody').append(row + subRow);
-                      });
+    //                       $('#tbody').append(row + subRow);
+    //                   });
 
-                      // $('.main-row').on('click', function() {
-                      //     var index = $(this).data('index');
-                      //     $('tr.sub-row[data-index="' + index + '"]').toggle(); 
-                      // });
+    //               } else {
+    //                   $('#tbody').append('<tr><td colspan="8" class="text-center">No Wpn Found in Inventory</td></tr>');
+    //               }
+    //           },
+    //           error: function(xhr, status, error) {
+    //               console.error(xhr.responseText);
+    //               alert('Failed to fetch the Wpns list: ' + error);
+    //           }
+    //       });
+    //   }
 
-                  } else {
-                      $('#tbody').append('<tr><td colspan="8" class="text-center">No Wpn Found in Inventory</td></tr>');
-                  }
-              },
-              error: function(xhr, status, error) {
-                  console.error(xhr.responseText);
-                  alert('Failed to fetch the Wpns list: ' + error);
-              }
-          });
-      }
+    function get_issue_wpn(emp_id) {
+    var wpn_url = '{{ route("wpn.return.indl")}}';
+    console.log(emp_id);
+    $.ajax({
+        url: wpn_url,
+        type: 'POST',
+        data: {
+            "emp_id": emp_id,
+            _token: '{{ csrf_token() }}',
+        },
+        dataType: 'json',
+        success: function(list) {
+            console.log(list);
+            $('#tbody').empty();
+            if (list.data.length > 0) {
+                $.each(list.data, function(index, alloted) {
+                    var createdAt = new Date(alloted.created_at);
+                    var formattedDate = ("0" + createdAt.getDate()).slice(-2) + "-" +
+                        ("0" + (createdAt.getMonth() + 1)).slice(-2) + "-" +
+                        createdAt.getFullYear() + " " +
+                        ("0" + createdAt.getHours()).slice(-2) + ":" +
+                        ("0" + createdAt.getMinutes()).slice(-2) + ":" +
+                        ("0" + createdAt.getSeconds()).slice(-2);
+
+                    var nature = alloted.nature == 0 ? "Less Than 24hr" : "More Than 24hr";
+
+                    var row = `<tr class="main-row" data-index="${index}" style="background-color:#F2F4FF">
+                        <td>${index + 1}</td>
+                        <td>${alloted.type}</td>
+                        <td>${alloted.regd_no}</td>
+                        <td>${alloted.butt_no}</td>
+                        <td>${alloted.wpn_tag}</td>
+                        <td>${nature}</td>
+                        <td>${alloted.purpose}</td>
+                        <td>${formattedDate}</td>
+                    </tr>`;
+
+                    var subRow = `<tr class="" data-index="${index}" style="background-color:#F2F4FF">
+                        <td colspan="8">
+                            <div class="sub-details">
+                                <label>Mag Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" value="${alloted.megazins}">
+                                <label>Slings Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" value="${alloted.slings}">
+                                <label>Bayonet Issued:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text" value="${alloted.bayonet}"><br>
+                                <label>Mag Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text">
+                                <label>Slings Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text">
+                                <label>Bayonet Return:</label> <input readonly style="background-color:lightgrey;width:100px;" type="text">
+                            </div>
+                        </td>
+                    </tr>`;
+
+                    var amnTable = `<tr class="" data-index="${index}" style="background-color:#E3E3E3">
+                        <td colspan="8">
+                            <div class="sub-details">
+                                <h4>Ammunition Details</h4>
+                                <table border="1" width="100%">
+                                    <tr>
+                                        <th>Ammunition Name</th>
+                                        <th>Issued Qty</th>
+                                        <th>Amn Live</th>
+                                        <th>Amn Empty</th>
+                                        <th>Amn Lost</th>
+                                    </tr>`;
+
+                    if (alloted.ammunitions.length > 0) {
+                        $.each(alloted.ammunitions, function(i, amn) {
+                            amnTable += `<tr>
+                                <td>${amn.amn_name}</td>
+                                <td>${amn.issued_qty}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>`;
+                        });
+                    } else {
+                        amnTable += `<tr><td colspan="5" class="text-center">No Ammunition Issued</td></tr>`;
+                    }
+
+                    amnTable += `</table></div></td></tr>`;
+
+                    $('#tbody').append(row + subRow + amnTable);
+                });
+
+            } else {
+                $('#tbody').append('<tr><td colspan="8" class="text-center">No Wpn Found in Inventory</td></tr>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+            alert('Failed to fetch the Wpns list: ' + error);
+        }
+    });
+}
+
 
   
      
@@ -463,11 +553,11 @@ $(document).ready(function() {
                               return;
                           }
                           
-                          console.log('Response1:', response1);
+                          console.log('Response1:', response1.data);
                           $('#tbody').empty();
                           wpn_ids=[];       
-                          if (Array.isArray(response1) && response1.length > 0) {
-                              $.each(response1, function(index, alloted) {
+                          if (Array.isArray(response1.data) && response1.data.length > 0) {
+                              $.each(response1.data, function(index, alloted) {
                                   let nature = alloted.nature == 0 ? "Less Then 24Hr" : "More Than 24Hr";
                                   var createdAt = new Date(alloted.created_at);
                                   var formattedDate = ("0" + createdAt.getDate()).slice(-2) + "-" + 
@@ -504,8 +594,38 @@ $(document).ready(function() {
                                   '</td>' +
                                   '</tr>';
 
+
+                                  var amnTable = `<tr class="" data-index="${index}" style="background-color:#C3C4FF">
+                                                    <td colspan="8">
+                                                        <div class="sub-details">
+                                                            <h4>Ammunition Details</h4>
+                                                            <table border="1" width="100%">
+                                                                <tr style="background-color:#8D6F64;color:white;">
+                                                                    <th>Ammunition Name</th>
+                                                                    <th>Issued Qty</th>
+                                                                    <th>Amn Live</th>
+                                                                    <th>Amn Empty</th>
+                                                                    <th>Amn Lost</th>
+                                                </tr>`;
+
+                                if (alloted.ammunitions.length > 0) {
+                                    $.each(alloted.ammunitions, function(i, amn) {
+                                        amnTable += `<tr>
+                                            <td>${amn.amn_name}</td>
+                                            <td>${amn.issued_qty}</td>
+                                            <td><input type="number" class="form-control form-control-sm"></td>
+                                            <td><input type="number" class="form-control form-control-sm"></td>
+                                            <td><input type="number" class="form-control form-control-sm"></td>
+                                        </tr>`;
+                                    });
+                                } else {
+                                    amnTable += `<tr><td colspan="5" class="text-center">No Ammunition Issued</td></tr>`;
+                                }
+
+                                amnTable += `</table></div></td></tr>`;
+
                                   // Append the row to the table body
-                                  $('#tbody').append(row + subRow);
+                                  $('#tbody').append(row + subRow + amnTable);
                                   // wpn_ids.push({
                                   //     id:alloted.id,
                                   //     // megazins:alloted.megazins,
@@ -528,81 +648,81 @@ $(document).ready(function() {
                           // Handle errors
                           console.error('Error:', error);
                       },
-                      complete: function() {
-                          // Hide the loader after the first request is complete
-                          $('#loader').hide();
+                    //   complete: function() {
+                    //       // Hide the loader after the first request is complete
+                    //       $('#loader').hide();
 
-                          // Start the second AJAX call
-                          $.ajax({
-                              url: '{{ route("fetch.wpn.notselected")}}',
-                              type: 'POST',
-                              data: { barcode: barcodesArray,
-                                      emp_id:emp_id,
-                                      _token: '{{ csrf_token() }}',
-                                      },
-                              success: function(response2) {
-                                  try {
-                                      // response2 = JSON.parse(response2);
-                                  } catch (e) {
-                                      console.error("Failed to parse response2:", e);
-                                      return;
-                                  }
-                                  console.log('Response2:', response2); 
+                    //       // Start the second AJAX call
+                    //       $.ajax({
+                    //           url: '{{ route("fetch.wpn.notselected")}}',
+                    //           type: 'POST',
+                    //           data: { barcode: barcodesArray,
+                    //                   emp_id:emp_id,
+                    //                   _token: '{{ csrf_token() }}',
+                    //                   },
+                    //           success: function(response2) {
+                    //               try {
+                    //                   // response2 = JSON.parse(response2);
+                    //               } catch (e) {
+                    //                   console.error("Failed to parse response2:", e);
+                    //                   return;
+                    //               }
+                    //               console.log('Response2:', response2); 
 
-                                  if (Array.isArray(response2) && response2.length > 0) {
-                                      $.each(response2, function(index, alloted) {
-                                          let nature = alloted.nature == 0 ? "Less Then 24Hr" : "More Than 24Hr";
-                                          var createdAt = new Date(alloted.created_at);
-                                          var formattedDate = ("0" + createdAt.getDate()).slice(-2) + "-" + 
-                                              ("0" + (createdAt.getMonth() + 1)).slice(-2) + "-" + 
-                                              createdAt.getFullYear() + " " + 
-                                              ("0" + createdAt.getHours()).slice(-2) + ":" + 
-                                              ("0" + createdAt.getMinutes()).slice(-2) + ":" + 
-                                              ("0" + createdAt.getSeconds()).slice(-2);
+                    //               if (Array.isArray(response2) && response2.length > 0) {
+                    //                   $.each(response2, function(index, alloted) {
+                    //                       let nature = alloted.nature == 0 ? "Less Then 24Hr" : "More Than 24Hr";
+                    //                       var createdAt = new Date(alloted.created_at);
+                    //                       var formattedDate = ("0" + createdAt.getDate()).slice(-2) + "-" + 
+                    //                           ("0" + (createdAt.getMonth() + 1)).slice(-2) + "-" + 
+                    //                           createdAt.getFullYear() + " " + 
+                    //                           ("0" + createdAt.getHours()).slice(-2) + ":" + 
+                    //                           ("0" + createdAt.getMinutes()).slice(-2) + ":" + 
+                    //                           ("0" + createdAt.getSeconds()).slice(-2);
 
-                                          var row = '<tr class="main-row" data-index="' + index + '" style="background-color:#F2F4FF">' +
-                                          '<td>' + (index + not_selected) + '</td>' +
-                                          '<td>' + alloted.type + '</td>' +
-                                          '<td>' + alloted.regd_no + '</td>' +
-                                          '<td>' + alloted.butt_no + '</td>' +
-                                          '<td>' + alloted.wpn_tag + '</td>' +
-                                          '<td>' + nature + '</td>' +
-                                          '<td>' + alloted.purpose + '</td>' +
-                                          '<td>' + formattedDate + '</td>' +
-                                          '</tr>'; 
+                    //                       var row = '<tr class="main-row" data-index="' + index + '" style="background-color:#F2F4FF">' +
+                    //                       '<td>' + (index + not_selected) + '</td>' +
+                    //                       '<td>' + alloted.type + '</td>' +
+                    //                       '<td>' + alloted.regd_no + '</td>' +
+                    //                       '<td>' + alloted.butt_no + '</td>' +
+                    //                       '<td>' + alloted.wpn_tag + '</td>' +
+                    //                       '<td>' + nature + '</td>' +
+                    //                       '<td>' + alloted.purpose + '</td>' +
+                    //                       '<td>' + formattedDate + '</td>' +
+                    //                       '</tr>'; 
 
-                                          var subRow = '<tr class="" data-index="' + index + '" style="background-color:#F2F4FF">' +
-                                          '<td colspan="8">' +
-                                          '<div class="sub-details">' +
-                                          '<label>Mag Issued:</label> <input readonly style="background-color:lightgrey;" type="text" name="magissue_' + index + '" id="magissue_' + index + '" value="'+ alloted.megazins +'">' +
-                                          '<label>Slings Issued:</label> <input readonly style="background-color:lightgrey;" type="text" name="slingsissue_' + index + '" id="slingsissue_' + index + '" value="'+ alloted.slings +'">' +
-                                          '<label>Bayonet Issued:</label> <input readonly style="background-color:lightgrey;" type="text" name="bayonetissue_' + index + '" id="bayonetissue_' + index + '" value="'+ alloted.bayonet +'">' + '<br>' +
-                                          '<label>Mag Return:</label> <input readonly style="background-color:lightgrey;" type="text" name="magret_' + index + '" id="magret_' + index + '" value="">' +
-                                          '<label>Slings Return:</label> <input readonly style="background-color:lightgrey;" type="text" name="slingsret_' + index + '" id="slingsret_' + index + '" value="">' +
-                                          '<label>Bayonet Return:</label> <input readonly style="background-color:lightgrey;" type="text" name="bayonetret_' + index + '" id="bayonetret_' + index + '" value="">' +
-                                          '</div>' +
-                                          '</td>' +
-                                          '</tr>';
+                    //                       var subRow = '<tr class="" data-index="' + index + '" style="background-color:#F2F4FF">' +
+                    //                       '<td colspan="8">' +
+                    //                       '<div class="sub-details">' +
+                    //                       '<label>Mag Issued:</label> <input readonly style="background-color:lightgrey;" type="text" name="magissue_' + index + '" id="magissue_' + index + '" value="'+ alloted.megazins +'">' +
+                    //                       '<label>Slings Issued:</label> <input readonly style="background-color:lightgrey;" type="text" name="slingsissue_' + index + '" id="slingsissue_' + index + '" value="'+ alloted.slings +'">' +
+                    //                       '<label>Bayonet Issued:</label> <input readonly style="background-color:lightgrey;" type="text" name="bayonetissue_' + index + '" id="bayonetissue_' + index + '" value="'+ alloted.bayonet +'">' + '<br>' +
+                    //                       '<label>Mag Return:</label> <input readonly style="background-color:lightgrey;" type="text" name="magret_' + index + '" id="magret_' + index + '" value="">' +
+                    //                       '<label>Slings Return:</label> <input readonly style="background-color:lightgrey;" type="text" name="slingsret_' + index + '" id="slingsret_' + index + '" value="">' +
+                    //                       '<label>Bayonet Return:</label> <input readonly style="background-color:lightgrey;" type="text" name="bayonetret_' + index + '" id="bayonetret_' + index + '" value="">' +
+                    //                       '</div>' +
+                    //                       '</td>' +
+                    //                       '</tr>';
 
-                                          // Append the row to the table body
-                                          $('#tbody').append(row + subRow);
+                    //                       // Append the row to the table body
+                    //                       $('#tbody').append(row + subRow);
 
-                                          // $('.main-row').on('click', function() {
-                                          //     var index = $(this).data('index');
-                                          //     $('tr.sub-row[data-index="' + index + '"]').toggle(); 
-                                          // });
-                                      });
-                                  } else {
-                                      // $('#tbody').append('<tr><td colspan="6" class="text-center">No Wpn Found in Inventory</td></tr>');
-                                      // alert("Weapon Not Found");
-                                  }
-                              },
-                              error: function(xhr, status, error) {
-                                  // Handle errors
-                                  console.error('Error:', error);
-                              }
-                          });
-                      }
+                    //                       // $('.main-row').on('click', function() {
+                    //                       //     var index = $(this).data('index');
+                    //                       //     $('tr.sub-row[data-index="' + index + '"]').toggle(); 
+                    //                       // });
+                    //                   });
+                    //               } else {
+                    //                   // $('#tbody').append('<tr><td colspan="6" class="text-center">No Wpn Found in Inventory</td></tr>');
+                    //                   // alert("Weapon Not Found");
+                    //               }
+                    //           },
+                    //           error: function(xhr, status, error) {
+                    //               // Handle errors
+                    //               console.error('Error:', error);
+                    //           }
+                    //       });
+                    //   }
                   });
 
                   $('#barcode').val('');

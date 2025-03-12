@@ -235,4 +235,15 @@ Route::get('weapon-issue-history/{id}',[AdminController::class,'weapon_issue_his
  Route::post('delete-wpn-src', [AdminController::class, 'delete_wpn_src'])->name('delete.wpn.src');
  Route::post('update-wpn-src', [AdminController::class, 'update_wpn_src'])->name('update.wpn.src');
 
+
+//  ******************manage Ammunition*****************//
+Route::get('/manage-amn', [AdminController::class, 'manage_amn'])->name('manage.amn');
+Route::post('/add-amn', [AdminController::class, 'add_amn'])->name('add.amn');
+Route::post('/update', [AdminController::class, 'update_amn'])->name('update.amn');
+Route::post('/add-amn-qty', [AdminController::class, 'add_amn_qty'])->name('add.amn.qty');
+Route::get('/get-amn-history', [AdminController::class, 'getAmmunitionHistory'])->name('get.amn.history');
+
+// Route::get('/ammunition/edit/{id}', [AdminController::class, 'edit'])->name('ammunition.edit');
+// Route::post('/ammunition/update/{id}', [AdminController::class, 'update'])->name('ammunition.update');
+// Route::post('/ammunition/delete/{id}', [AdminController::class, 'destroy'])->name('ammunition.delete');
 });

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Accessory;
+use App\Models\Ammunition;
+use App\Models\AmnHistory;
+use App\Models\AmnIssueRec;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Destination;
@@ -22,6 +25,7 @@ use App\Models\WpnAllot;
 use App\Models\WpnIssueRec;
 use App\Models\WpnList;
 use App\Models\WpnType;
+use App\Models\WpnTypeAmmunition;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -1061,15 +1065,78 @@ public function fetchWpnAlloted(Request $request)
 //     return response()->json($result);
 // }
 
+// public function fetchWpnBarcodeSelected(Request $request)
+// {
+//     $barcode = $request->input('barcode');
+//     $purpose = $request->input('purpose');
+//     $emp_id = $request->input('emp_id');
+//     $amn = "";
+//     // $barcode = $validated['barcode'];
+//     // $purpose = $validated['purpose'] ?? null;
+//     // $emp_id = $validated['emp_id'] ?? null;
+
+//     try {
+//         $query = WpnList::select(
+//                 'wpn_list.regd_no',
+//                 'wpn_allot.emp_id',
+//                 'wpn_list.butt_no',
+//                 'wpn_types.type',
+//                 'wpn_list.wpn_tag',
+//                 'wpn_list.id',
+//                 'wpn_list.status'
+//             )
+//             ->leftJoin('wpn_types', 'wpn_types.id', '=', 'wpn_list.wpn_type')
+//             ->leftJoin('wpn_allot', 'wpn_allot.wpn_id', '=', 'wpn_list.id')
+//             ->where('wpn_list.status', 0)
+//             ->where(function ($query) use ($barcode) {
+//                 $query->whereIn('wpn_list.wpn_tag', $barcode)
+//                       ->orWhereIn('wpn_list.butt_no', $barcode);
+//             });
+
+//         if (!empty($purpose)) {
+//             $query->where('wpn_allot.emp_id', $emp_id);
+//         }
+
+//         $query->groupBy(
+//             'wpn_list.id', 
+//             'wpn_list.regd_no', 
+//             'wpn_allot.emp_id', 
+//             'wpn_list.butt_no', 
+//             'wpn_types.type', 
+//             'wpn_list.wpn_tag', 
+//             'wpn_list.status'
+//         );
+
+//         $result = $query->get();
+
+//         if ($result->isEmpty()) {
+//             return response()->json(['status' => 'success', 'data' => [], 'message' => 'No records found.']);
+//         }
+
+//         $wpn = WpnList::where('wpn_tag', $barcode)
+//               ->orWhere('butt_no', $barcode)
+//               ->orWhere('regd_no', $barcode)
+//               ->first();
+        
+//         if ($wpn) {
+//             $amn_id = WpnTypeAmmunition::where('wpn_type_id', $wpn->id)->select('amn_id')->get();
+//             $amn = Ammunition::whereIn('id', $amn_id)->get();
+//         }
+
+
+//         return response()->json($result);
+//     } catch (\Exception $e) {
+//         \Log::error('Error fetching barcode data', ['error' => $e->getMessage()]);
+//         return response()->json(['status' => 'error', 'message' => 'Internal Server Error'], 500);
+//     }
+// }
+
+
 public function fetchWpnBarcodeSelected(Request $request)
 {
     $barcode = $request->input('barcode');
     $purpose = $request->input('purpose');
     $emp_id = $request->input('emp_id');
-
-    // $barcode = $validated['barcode'];
-    // $purpose = $validated['purpose'] ?? null;
-    // $emp_id = $validated['emp_id'] ?? null;
 
     try {
         $query = WpnList::select(
@@ -1079,14 +1146,15 @@ public function fetchWpnBarcodeSelected(Request $request)
                 'wpn_types.type',
                 'wpn_list.wpn_tag',
                 'wpn_list.id',
-                'wpn_list.status'
+                'wpn_list.status',
+                'wpn_list.wpn_type'
             )
             ->leftJoin('wpn_types', 'wpn_types.id', '=', 'wpn_list.wpn_type')
             ->leftJoin('wpn_allot', 'wpn_allot.wpn_id', '=', 'wpn_list.id')
             ->where('wpn_list.status', 0)
             ->where(function ($query) use ($barcode) {
-                $query->whereIn('wpn_list.wpn_tag', $barcode)
-                      ->orWhereIn('wpn_list.butt_no', $barcode);
+                $query->where('wpn_list.wpn_tag', $barcode)
+                      ->orWhere('wpn_list.butt_no', $barcode);
             });
 
         if (!empty($purpose)) {
@@ -1100,7 +1168,8 @@ public function fetchWpnBarcodeSelected(Request $request)
             'wpn_list.butt_no', 
             'wpn_types.type', 
             'wpn_list.wpn_tag', 
-            'wpn_list.status'
+            'wpn_list.status',
+            'wpn_list.wpn_type'
         );
 
         $result = $query->get();
@@ -1109,7 +1178,15 @@ public function fetchWpnBarcodeSelected(Request $request)
             return response()->json(['status' => 'success', 'data' => [], 'message' => 'No records found.']);
         }
 
-        return response()->json($result);
+        // Fetch related ammunition for each weapon
+        foreach ($result as $wpn) {
+            $amn_ids = WpnTypeAmmunition::where('wpn_type_id', $wpn->wpn_type)
+                        ->pluck('amn_id'); // Get IDs only
+
+            $wpn->ammunition = Ammunition::whereIn('id', $amn_ids)->get();
+        }
+
+        return response()->json(['status' => 'success', 'data' => $result]);
     } catch (\Exception $e) {
         \Log::error('Error fetching barcode data', ['error' => $e->getMessage()]);
         return response()->json(['status' => 'error', 'message' => 'Internal Server Error'], 500);
@@ -1173,6 +1250,39 @@ public function fetchWpnBarcodeNotSelected(Request $request)
 }
 
 
+// public function addIssueReturn(Request $request)
+// {
+//     $wpn_ids = $request->input('wpn_ids');
+//     $purpose = $request->input('purpose');
+//     $emp_id = $request->input('emp_id');
+//     $nature = $request->input('nature');
+//     $megazins = $request->input('megazins');
+//     $slings = $request->input('slings');
+//     $bayonet = $request->input('bayonet');
+//     $remark = $request->input('remark');
+
+//     if (is_array($wpn_ids) && !empty($wpn_ids)) {
+//         foreach ($wpn_ids as $wpn_id) {
+//             DB::table('wpn_issue_rec')->insert([
+//                 'emp_id' => $emp_id,
+//                 'wpn_id' => $wpn_id,
+//                 'nature' => $nature,
+//                 'purpose' => $purpose,
+//                 'megazins' => $megazins,
+//                 'slings' => $slings,
+//                 'bayonet' => $bayonet,
+//                 'remark' => $remark,
+//             ]);
+
+//             DB::table('wpn_list')->where('id', $wpn_id)->update(['status' => 1]);
+//         }
+
+//         return response(1);
+//     }
+
+//     return response(0);
+// }
+
 public function addIssueReturn(Request $request)
 {
     $wpn_ids = $request->input('wpn_ids');
@@ -1183,10 +1293,11 @@ public function addIssueReturn(Request $request)
     $slings = $request->input('slings');
     $bayonet = $request->input('bayonet');
     $remark = $request->input('remark');
+    $ammunition = $request->input('ammunition'); // Ammunition details (array)
 
     if (is_array($wpn_ids) && !empty($wpn_ids)) {
         foreach ($wpn_ids as $wpn_id) {
-            DB::table('wpn_issue_rec')->insert([
+            $wpn_rec_id = WpnIssueRec::insertGetId([
                 'emp_id' => $emp_id,
                 'wpn_id' => $wpn_id,
                 'nature' => $nature,
@@ -1196,21 +1307,120 @@ public function addIssueReturn(Request $request)
                 'bayonet' => $bayonet,
                 'remark' => $remark,
             ]);
+            
 
-            DB::table('wpn_list')->where('id', $wpn_id)->update(['status' => 1]);
+            // Update weapon status
+            WpnList::where('id', $wpn_id)->update(['status' => 1]);
+
+            if (is_array($ammunition) && !empty($ammunition)) {
+                foreach ($ammunition as $amn) {
+                    $amn_id = $amn['amn_id'];
+                    $issued_qty = (int) $amn['issued_qty'];
+    
+                    // Fetch max available quantity
+                    $max_qty = DB::table('ammunition')->where('id', $amn_id)->value('qty');
+    
+                    if ($issued_qty > $max_qty) {
+                        return response()->json(['error' => "Issued quantity exceeds available stock for ammunition ID: $amn_id"], 400);
+                    }
+    
+                    // Insert ammunition issue record
+                    AmnIssueRec::insert([
+                        'issue_id' => $wpn_rec_id,
+                        'amn_id' => $amn_id,
+                        'issued_qty' => $issued_qty,
+                    ]);
+    
+                    // Deduct issued quantity from stock
+                    Ammunition::where('id', $amn_id)->decrement('qty', $issued_qty);
+                }
+            }
         }
 
-        return response(1);
+        // Handle Ammunition
+     
+
+        return response()->json(['success' => 'Weapon and ammunition issued successfully.'], 200);
     }
 
-    return response(0);
+    return response()->json(['error' => 'No weapon IDs provided.'], 400);
 }
+
+
 
 // **************** wpn return ***************//
 public function wpn_return(Request $request){
     return view("admin.dashboard.wpn_return");
 }
 
+
+// public function wpnReturnIndl(Request $request)
+// {
+//     $emp_id = $request->input('emp_id');
+
+//     if (empty($emp_id)) {
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Employee code is required.',
+//         ]);
+//     }
+
+//     // Query to get weapon allotment list
+//     $result = DB::table('wpn_issue_rec')
+//         ->select(
+//             'wpn_list.wpn_tag',
+//             'wpn_issue_rec.megazins',
+//             'wpn_issue_rec.slings',
+//             'wpn_issue_rec.bayonet',
+//             'wpn_issue_rec.emp_id',
+//             'wpn_issue_rec.id',
+//             'wpn_list.regd_no',
+//             'wpn_list.butt_no',
+//             'wpn_types.type',
+//             'wpn_list.status',
+//             'wpn_issue_rec.nature',
+//             'wpn_issue_rec.purpose',
+//             'wpn_issue_rec.created_at'
+//         )
+//         ->join('wpn_list', 'wpn_list.id', '=', 'wpn_issue_rec.wpn_id')
+//         ->join('wpn_types', 'wpn_types.id', '=', 'wpn_list.wpn_type')
+//         ->where('wpn_issue_rec.emp_id', $emp_id)
+//         ->whereNull('wpn_issue_rec.return_date')
+//         ->where('wpn_list.status', 1)
+//         ->groupBy(
+//             'wpn_issue_rec.wpn_id',
+//             'wpn_list.wpn_tag',
+//             'wpn_issue_rec.megazins',
+//             'wpn_issue_rec.slings',
+//             'wpn_issue_rec.bayonet',
+//             'wpn_issue_rec.emp_id',
+//             'wpn_issue_rec.id',
+//             'wpn_list.regd_no',
+//             'wpn_list.butt_no',
+//             'wpn_types.type',
+//             'wpn_list.status',
+//             'wpn_issue_rec.nature',
+//             'wpn_issue_rec.purpose',
+//             'wpn_issue_rec.created_at'
+//         )
+        
+//         ->get();
+
+    
+//     if ($result->isEmpty()) {
+//         return response()->json([
+//             'status' => 'success',
+//             'data' => [],
+//             'message' => 'No records found.',
+//         ]);
+//     }
+    
+
+//     return response()->json([
+//         'status' => 'success',
+//         'data' => $result,
+//     ]);
+// }
 
 public function wpnReturnIndl(Request $request)
 {
@@ -1223,49 +1433,30 @@ public function wpnReturnIndl(Request $request)
         ]);
     }
 
-    // Query to get weapon allotment list
-    $result = DB::table('wpn_issue_rec')
-        ->select(
-            'wpn_list.wpn_tag',
+    // ✅ Step 1: Get weapon issue records
+    $weapons = WpnIssueRec::select(
+            'wpn_issue_rec.id AS issue_id',
+            'wpn_issue_rec.emp_id',
+            'wpn_issue_rec.nature',
+            'wpn_issue_rec.purpose',
             'wpn_issue_rec.megazins',
             'wpn_issue_rec.slings',
             'wpn_issue_rec.bayonet',
-            'wpn_issue_rec.emp_id',
-            'wpn_issue_rec.id',
+            'wpn_issue_rec.created_at',
+            'wpn_list.wpn_tag',
             'wpn_list.regd_no',
             'wpn_list.butt_no',
-            'wpn_types.type',
             'wpn_list.status',
-            'wpn_issue_rec.nature',
-            'wpn_issue_rec.purpose',
-            'wpn_issue_rec.created_at'
+            'wpn_types.type'
         )
         ->join('wpn_list', 'wpn_list.id', '=', 'wpn_issue_rec.wpn_id')
         ->join('wpn_types', 'wpn_types.id', '=', 'wpn_list.wpn_type')
         ->where('wpn_issue_rec.emp_id', $emp_id)
         ->whereNull('wpn_issue_rec.return_date')
         ->where('wpn_list.status', 1)
-        ->groupBy(
-            'wpn_issue_rec.wpn_id',
-            'wpn_list.wpn_tag',
-            'wpn_issue_rec.megazins',
-            'wpn_issue_rec.slings',
-            'wpn_issue_rec.bayonet',
-            'wpn_issue_rec.emp_id',
-            'wpn_issue_rec.id',
-            'wpn_list.regd_no',
-            'wpn_list.butt_no',
-            'wpn_types.type',
-            'wpn_list.status',
-            'wpn_issue_rec.nature',
-            'wpn_issue_rec.purpose',
-            'wpn_issue_rec.created_at'
-        )
-        
         ->get();
 
-    
-    if ($result->isEmpty()) {
+    if ($weapons->isEmpty()) {
         return response()->json([
             'status' => 'success',
             'data' => [],
@@ -1273,13 +1464,96 @@ public function wpnReturnIndl(Request $request)
         ]);
     }
 
+    // ✅ Step 2: Get ammunition records grouped by issue_id
+    $ammunitions = AmnIssueRec::select(
+            'amn_issue_rec.issue_id',
+            'ammunition.amn_name',
+            'amn_issue_rec.issued_qty'
+        )
+        ->join('ammunition', 'ammunition.id', '=', 'amn_issue_rec.amn_id')
+        ->whereIn('amn_issue_rec.issue_id', $weapons->pluck('issue_id'))
+        ->get();
+
+    // ✅ Step 3: Map ammunition to weapon records
+    $weapons = $weapons->map(function ($weapon) use ($ammunitions) {
+        $weapon->ammunitions = $ammunitions->where('issue_id', $weapon->issue_id)->values();
+        return $weapon;
+    });
+
     return response()->json([
         'status' => 'success',
-        'data' => $result,
+        'data' => $weapons,
     ]);
 }
 
 
+
+
+// public function fetchWpnBarcodeSelectedIndl(Request $request)
+// {
+//     $barcode = $request->input('barcode');
+//     $emp_id = $request->input('emp_id');
+
+//     // Ensure $barcode is an array
+//     if (!is_array($barcode)) {
+//         $barcode = [$barcode];
+//     }
+
+//     // Query to fetch weapon barcode and related details
+//     $result = DB::table('wpn_issue_rec')
+//         ->select(
+
+//             'wpn_list.regd_no',
+//             'wpn_issue_rec.megazins',
+//             'wpn_issue_rec.slings',
+//             'wpn_issue_rec.bayonet',
+//             'wpn_issue_rec.emp_id',
+//             'wpn_issue_rec.nature',
+//             'wpn_issue_rec.purpose',
+//             'wpn_issue_rec.created_at',
+//             'wpn_list.butt_no',
+//             'wpn_types.type',
+//             'wpn_list.wpn_tag',
+//             'wpn_list.id',
+//             'wpn_list.status'
+//         )
+//         ->join('wpn_list', 'wpn_issue_rec.wpn_id', '=', 'wpn_list.id') // Join wpn_list
+//         ->join('wpn_types', 'wpn_types.id', '=', 'wpn_list.wpn_type') // Join wpn_type
+//         ->where('wpn_list.status', 1)
+//         ->where(function ($query) use ($barcode) {
+//             $query->whereIn('wpn_list.wpn_tag', $barcode)
+//                   ->orWhereIn('wpn_list.butt_no', $barcode);
+//         })
+//         ->where('wpn_issue_rec.emp_id', $emp_id)
+//         ->whereNull('wpn_issue_rec.return_date')
+//         ->groupBy([
+//             'wpn_list.regd_no',
+//             'wpn_issue_rec.megazins',
+//             'wpn_issue_rec.slings',
+//             'wpn_issue_rec.bayonet',
+//             'wpn_issue_rec.emp_id',
+//             'wpn_issue_rec.nature',
+//             'wpn_issue_rec.purpose',
+//             'wpn_issue_rec.created_at',
+//             'wpn_list.butt_no',
+//             'wpn_types.type',
+//             'wpn_list.wpn_tag',
+//             'wpn_list.id',
+//             'wpn_list.status'
+//         ])
+//         ->get();
+
+//     // Check if any records are found and return response
+//     if ($result->isEmpty()) {
+//         return response()->json([
+//             'status' => 'success',
+//             'data' => [],
+//             'message' => 'No records found.',
+//         ]);
+//     }
+
+//     return response()->json($result);
+// }
 
 public function fetchWpnBarcodeSelectedIndl(Request $request)
 {
@@ -1292,9 +1566,10 @@ public function fetchWpnBarcodeSelectedIndl(Request $request)
     }
 
     // Query to fetch weapon barcode and related details
-    $result = DB::table('wpn_issue_rec')
+    $weapons = DB::table('wpn_issue_rec')
         ->select(
             'wpn_list.regd_no',
+            'wpn_issue_rec.id AS issue_id',
             'wpn_issue_rec.megazins',
             'wpn_issue_rec.slings',
             'wpn_issue_rec.bayonet',
@@ -1319,6 +1594,7 @@ public function fetchWpnBarcodeSelectedIndl(Request $request)
         ->whereNull('wpn_issue_rec.return_date')
         ->groupBy([
             'wpn_list.regd_no',
+            'wpn_issue_rec.id',
             'wpn_issue_rec.megazins',
             'wpn_issue_rec.slings',
             'wpn_issue_rec.bayonet',
@@ -1334,8 +1610,7 @@ public function fetchWpnBarcodeSelectedIndl(Request $request)
         ])
         ->get();
 
-    // Check if any records are found and return response
-    if ($result->isEmpty()) {
+    if ($weapons->isEmpty()) {
         return response()->json([
             'status' => 'success',
             'data' => [],
@@ -1343,8 +1618,30 @@ public function fetchWpnBarcodeSelectedIndl(Request $request)
         ]);
     }
 
-    return response()->json($result);
+    // ✅ Fetch ammunition details grouped by issue_id
+    $ammunitions = DB::table('amn_issue_rec')
+        ->select(
+            'amn_issue_rec.issue_id',
+            'ammunition.amn_name',
+            'amn_issue_rec.issued_qty'
+        )
+        ->join('ammunition', 'ammunition.id', '=', 'amn_issue_rec.amn_id')
+        ->whereIn('amn_issue_rec.issue_id', $weapons->pluck('issue_id'))
+        ->get();
+
+    // ✅ Attach ammunition data to each weapon record
+    $weapons = $weapons->map(function ($weapon) use ($ammunitions) {
+        $weapon->ammunitions = $ammunitions->where('issue_id', $weapon->issue_id)->values();
+        return $weapon;
+    });
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $weapons,
+    ]);
 }
+
+
 
 
 public function fetchWpnBarcodeNotSelectedIndl(Request $request)
@@ -3031,6 +3328,121 @@ public function update_wpn_src(Request $request){
     $wpn_src->save();
     return redirect()->route('manage.wpn.src')->with('success', 'Wpn Source Updated');
 }
+
+
+
+public function manage_amn()
+{
+    $ammunition = Ammunition::paginate(10);
+    $wpnTypes = WpnType::all();
+    return view('admin.dashboard.manage_amn', compact('ammunition', 'wpnTypes'));
+}
+
+public function add_amn(Request $request)
+{
+    $request->validate([
+        'amn_name' => 'required|string|unique:ammunition,amn_name',
+        'qty' => 'required|integer|min:0',
+        'wpn_types' => 'required|array'
+    ]);
+
+    // Create Ammunition
+    $ammunition = Ammunition::create([
+        'amn_name' => $request->amn_name,
+        'qty' => $request->qty
+    ]);
+
+    // Store wpn_type_id in wpntype_ammunition table
+    foreach ($request->wpn_types as $wpn_type_id) {
+        WpnTypeAmmunition::create([
+            'amn_id' => $ammunition->id, // Use the ID of the newly created ammunition
+            'wpn_type_id' => $wpn_type_id
+        ]);
+    }
+
+    return redirect()->route('manage.amn')->with('success', 'Ammunition added successfully');
+}
+
+
+public function update_amn(Request $request)
+{
+    // dd($id);
+    // $request->validate([
+    //     'edit_name' => 'required|string|unique:ammunition,amn_name',
+    //     'edit_qty' => 'required|integer|min:0',
+    //     'edit_wpn_types' => 'required|array'
+    // ]);
+        
+        $id =  $request->input('edit_id');
+        // dd($request->edit_wpn_types);
+    // dd($request->amn_name);
+    // Find the existing ammunition record
+    $ammunition = Ammunition::findOrFail($id);
+
+    // Update ammunition details
+    $ammunition->update([
+        'amn_name' => $request->edit_name,
+        'qty' => $request->edit_qty
+    ]);
+
+    // Remove old weapon type associations
+    WpnTypeAmmunition::where('amn_id', $id)->delete();
+
+    // Insert new weapon type associations
+    foreach ($request->edit_wpn_types as $wpn_type_id) {
+        WpnTypeAmmunition::create([
+            'amn_id' => $id,
+            'wpn_type_id' => $wpn_type_id
+        ]);
+    }
+
+    return redirect()->route('manage.amn')->with('success', 'Ammunition updated successfully');
+}
+
+
+//************* add amn qty**************//
+public function add_amn_qty(Request $request)
+{   
+    // dd($request->all());
+    $request->validate([
+        'amn_id' => 'required|exists:ammunition,id',
+        'qty' => 'required|integer|min:1',
+    ]);
+
+    // Fetch the ammunition record
+    $ammunition = Ammunition::findOrFail($request->amn_id);
+
+    // Update the quantity in the ammunition table
+    $ammunition->qty += $request->qty;
+    $ammunition->save();
+
+    // Insert record into amn_history table
+    AmnHistory::create([
+        'amn_id' => $request->amn_id,
+        'added_qty' => $request->qty,
+    ]);
+
+    return redirect()->route('manage.amn')->with('success', 'Ammunition quantity updated successfully');
+}
+
+public function getAmmunitionHistory(Request $request)
+{
+    $amn_id = $request->amn_id;
+    $query = AmnHistory::where('amn_id', $amn_id);
+
+    // Apply Date Filters
+    if ($request->has('from_date') && !empty($request->from_date)) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+    if ($request->has('to_date') && !empty($request->to_date)) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $history = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    return response()->json($history);
+}
+
 
 
 }

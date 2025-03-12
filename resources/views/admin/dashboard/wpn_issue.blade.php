@@ -342,20 +342,21 @@
                                 </tr>
                                 </thead>
                                 <tbody id=tbody>
-                                {{-- <tr>
-                                    <td>1</td>
-                                    <td>Shotgun</td>
-                                    <td>fert34</td>
-                                    <td>ger34</td>
-                                    <td>43245444</td>
-                                    <td class="status-in">IN</td>
-                                </tr> --}}
-                               
-                                
                                 
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <hr>
+                    <center><h5>Ammunition Detail</h5></center>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row row-xs align-items-center mg-b-20" id="amn-data">
+
+                            </div>
+                        </div>
+                        
+                        
                     </div>
                     <hr>
                     <div class="row row-xs align-items-center mg-b-20">
@@ -511,7 +512,6 @@
                     success: function(list) {
                         console.log(list.data);
                         $('#tbody').empty(); 
-
                         if (list.data.length > 0) {
                             $.each(list.data, function(index, alloted) {
                                 if(alloted.status == 0){
@@ -725,94 +725,40 @@
 
 
             $('#barcode').keypress(function(event) {
-    var status = "";
-    var color = "";
-    var not_selected = "";
-    if (event.which === 13) {
-        event.preventDefault();
-        var barcode = $('#barcode').val();
-        barcodesArray.push(barcode);
-        console.log(barcodesArray, emp_id, purpose, "this is testing");
+                var status = "";
+                var color = "";
+                var not_selected = "";
+                if (event.which === 13) {
+                    event.preventDefault();
+                    var barcode = $('#barcode').val();
+                    barcodesArray.push(barcode);
+                    console.log(barcodesArray, emp_id, purpose, "this is testing");
 
-        // Show the loader
-        $('#loader').show();
+                    // Show the loader
+                    $('#loader').show();
 
-        // First AJAX call
-        $.ajax({
-            url: '{{ route("fetch.wpn.barcode")}}',
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: { barcode: barcodesArray, emp_id: emp_id, purpose: purpose },
-            success: function(response1) {
-                try {
-                    console.log(response1);
-                } catch (e) {
-                    console.error("Failed to parse response1:", e);
-                    return;
-                }
+                    // First AJAX call
+                    $.ajax({
+                        url: '{{ route("fetch.wpn.barcode")}}',
+                        type: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        data: { barcode: barcodesArray, emp_id: emp_id, purpose: purpose },
+                        success: function(response1) {
+                            try {
+                                console.log(response1);
+                            } catch (e) {
+                                console.error("Failed to parse response1:", e);
+                                return;
+                            }
 
-                console.log('Response1:', response1);
-                $('#tbody').empty();
-                wpn_ids = [];
-                if (Array.isArray(response1) && response1.length > 0) {
-                    $.each(response1, function(index, alloted) {
-                        if (alloted.status == 0) {
-                            status = "IN";
-                            color = "#52b539c2";
-                        } else {
-                            status = "OUT";
-                            color = "#e12f2fbf";
-                        }
-                        var row = '<tr style="background-color:#e1d459">' +
-                            '<td>' + (index + 1) + '</td>' +
-                            '<td>' + alloted.type + '</td>' +
-                            '<td>' + alloted.regd_no + '</td>' +
-                            '<td>' + alloted.butt_no + '</td>' +
-                            '<td>' + alloted.wpn_tag + '</td>' +
-                            '<td style="background-color: ' + color + '; color: white;">' + status + '</td>' +
-                            '</tr>';
-
-                        // Append the row to the table body
-                        $('#tbody').append(row);
-                        wpn_ids.push(alloted.id);
-                        not_selected = barcodesArray.length + 1;
-                    });
-                } else {
-                    alert("Weapon Not in Inventory");
-                    not_selected = barcodesArray.length;
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-            },
-            complete: function() {
-                // Hide the loader after the first request is complete
-                $('#loader').hide();
-
-                // Start the second AJAX call
-                $.ajax({
-                    url: '{{ route("fetch.wpn.barcode.not") }}',
-                    type: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    data: { barcode: barcodesArray, emp_id: emp_id, purpose: purpose },
-                    success: function(response2) {
-                        try {
-                            console.log(response2);
-                        } catch (e) {
-                            console.error("Failed to parse response2:", e);
-                            return;
-                        }
-
-                        console.log('Response2:', response2);
-
-                        if (Array.isArray(response2) && response2.length > 0) {
-                            $.each(response2, function(index, alloted) {
-                                // Check if the barcode has already been processed
-                                if (!barcodesArray.includes(alloted.barcode)) {
+                            console.log('Response1:', response1);
+                            $('#tbody').empty();
+                            wpn_ids = [];
+                            
+                            if (wpn_ids.length < 1 && Array.isArray(response1.data) && response1.data.length > 0) {
+                                $.each(response1.data, function(index, alloted) {
                                     if (alloted.status == 0) {
                                         status = "IN";
                                         color = "#52b539c2";
@@ -820,8 +766,8 @@
                                         status = "OUT";
                                         color = "#e12f2fbf";
                                     }
-                                    var row = '<tr>' +
-                                        '<td>' + (index + not_selected) + '</td>' +
+                                    var row = '<tr style="background-color:#e1d459">' +
+                                        '<td>' + (index + 1) + '</td>' +
                                         '<td>' + alloted.type + '</td>' +
                                         '<td>' + alloted.regd_no + '</td>' +
                                         '<td>' + alloted.butt_no + '</td>' +
@@ -831,30 +777,165 @@
 
                                     // Append the row to the table body
                                     $('#tbody').append(row);
+                                    wpn_ids.push(alloted.id);
+                                    not_selected = barcodesArray.length + 1;
+                                    $.each(alloted.ammunition, function(index, amn) {
+                                        var div = `<div class="col-md-6">
+                                            <label class="form-label mg-b-0" ><b>${amn.amn_name}</b></label>
+                                
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="number"  name="issue_qty" max="${amn.qty}" data-amn-id="${amn.id}"  data-max="${amn.qty}" class="form-control issue-qty"><em>Max: ${amn.qty}</em>
+                                        </div>`;
+
+                                        $('#amn-data').append(div);
+                                    });
+                                    $(document).on('input', '.issue-qty', function() {
+                                        var maxQty = $(this).data('max'); // Get max qty from data attribute
+                                        if (parseInt(this.value) > maxQty) {
+                                            alert("Quantity cannot exceed " + maxQty);
+                                            this.value = maxQty; // Reset value to max if exceeded
+                                        }
+                                    });
+                                });
+                            } else {
+                                alert("Weapon Not in Inventory");
+                                not_selected = barcodesArray.length;
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                        },
+                        complete: function() {
+                            // Hide the loader after the first request is complete
+                            $('#loader').hide();
+
+                            // Start the second AJAX call
+                            $.ajax({
+                                url: '{{ route("fetch.wpn.barcode.not") }}',
+                                type: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                data: { barcode: barcodesArray, emp_id: emp_id, purpose: purpose },
+                                success: function(response2) {
+                                    try {
+                                        console.log(response2);
+                                    } catch (e) {
+                                        console.error("Failed to parse response2:", e);
+                                        return;
+                                    }
+
+                                    console.log('Response2:', response2);
+
+                                    if (Array.isArray(response2) && response2.length > 0) {
+                                        $.each(response2, function(index, alloted) {
+                                            // Check if the barcode has already been processed
+                                            if (!barcodesArray.includes(alloted.barcode)) {
+                                                if (alloted.status == 0) {
+                                                    status = "IN";
+                                                    color = "#52b539c2";
+                                                } else {
+                                                    status = "OUT";
+                                                    color = "#e12f2fbf";
+                                                }
+                                                var row = '<tr>' +
+                                                    '<td>' + (index + not_selected) + '</td>' +
+                                                    '<td>' + alloted.type + '</td>' +
+                                                    '<td>' + alloted.regd_no + '</td>' +
+                                                    '<td>' + alloted.butt_no + '</td>' +
+                                                    '<td>' + alloted.wpn_tag + '</td>' +
+                                                    '<td style="background-color: ' + color + '; color: white;">' + status + '</td>' +
+                                                    '</tr>';
+
+                                                // Append the row to the table body
+                                                $('#tbody').append(row);
+                                            }
+                                        });
+                                    } else {
+                                        console("Weapon Not Found");
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('Error:', error);
                                 }
                             });
-                        } else {
-                            console("Weapon Not Found");
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                    }
-                });
-            }
-        });
+                    });
 
-        $('#barcode').val('');
-    }
-});
+                    $('#barcode').val('');
+                }
+            });
 
 
+
+            // $(".btn-update").on('click', function() {
+
+               
+            //     if(wpn_ids.length < 1){
+            //         alert("Please Scan Weapon First");
+            //         return;
+            //     }
+            //     if (!confirm("Are you sure ?")) {
+            //         return; // Stop execution if user cancels
+            //     }
+            //     // Fetch input values
+            //     var nature = $('input[name="nature"]:checked').val(); 
+            //     var purpose = $('input[name="purpose"]:checked').val(); 
+            //     var megazins = $('#megazins').val();
+            //     var slings = $('#slings').val();
+            //     var bayonet = $('#bayonet').val();
+            //     var remark = $('#remark').val();
+                
+            //     // Assuming wpn_ids and emp_id are defined somewhere
+            //     console.log(nature, purpose, megazins, slings, bayonet, remark, wpn_ids, emp_id);
+
+            //     // Make sure wpn_ids and emp_id are defined
+            //     if (wpn_ids && emp_id) {
+            //         $.ajax({
+            //             url: '{{ route("add.issue.return")}}',
+            //             type: "POST",
+            //             headers: {
+            //                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            //             },
+            //             data: { 
+            //                 emp_id: emp_id,
+            //                 purpose: purpose,
+            //                 wpn_ids: wpn_ids, // Pass the array of weapon IDs
+            //                 nature: nature,
+            //                 megazins: megazins,
+            //                 slings: slings,
+            //                 bayonet: bayonet,
+            //                 remark: remark
+            //             },
+            //             success: function(data) {
+            //                 console.log(data);
+            //                 if (data == 1) {
+            //                     alert('Weapon Issue Successfully');
+            //                     window.location.reload();
+            //                     //   window.close();
+            //                 } else {
+            //                     alert('Failed to submit data');
+            //                 }
+            //             },
+            //             error: function(xhr, status, error) {
+            //                 console.error('AJAX Error:', error);
+            //             }
+            //         });
+            //     } else {
+            //         alert('Weapon IDs or Employee Code are missing.');
+            //     }
+            // });
 
             $(".btn-update").on('click', function() {
-
+                if(wpn_ids.length < 1){
+                        alert("Please Scan Weapon First");
+                        return;
+                    }
                 if (!confirm("Are you sure ?")) {
                     return; // Stop execution if user cancels
                 }
+
                 // Fetch input values
                 var nature = $('input[name="nature"]:checked').val(); 
                 var purpose = $('input[name="purpose"]:checked').val(); 
@@ -862,11 +943,32 @@
                 var slings = $('#slings').val();
                 var bayonet = $('#bayonet').val();
                 var remark = $('#remark').val();
-                
-                // Assuming wpn_ids and emp_id are defined somewhere
-                console.log(nature, purpose, megazins, slings, bayonet, remark, wpn_ids, emp_id);
 
-                // Make sure wpn_ids and emp_id are defined
+                // Collect ammunition details
+                var ammunition = [];
+                var isValid = true; // Flag to check validation
+
+                $(".issue-qty").each(function() {
+                    var amn_id = $(this).attr("data-amn-id"); // Get ammunition ID
+                    var maxQty = parseInt($(this).data('max')); // Get max allowed qty
+                    var issuedQty = parseInt($(this).val()) || 0; // Get user input
+
+                    if (issuedQty > maxQty) {
+                        alert("Quantity for ammunition ID " + amn_id + " cannot exceed " + maxQty);
+                        isValid = false;
+                        return false; // Stop execution if invalid
+                    }
+
+                    // Push valid ammunition data
+                    ammunition.push({
+                        amn_id: amn_id,
+                        issued_qty: issuedQty
+                    });
+                });
+
+                if (!isValid) return; // Stop execution if validation fails
+
+                // Ensure wpn_ids and emp_id are defined
                 if (wpn_ids && emp_id) {
                     $.ajax({
                         url: '{{ route("add.issue.return")}}',
@@ -882,14 +984,14 @@
                             megazins: megazins,
                             slings: slings,
                             bayonet: bayonet,
-                            remark: remark
+                            remark: remark,
+                            ammunition: ammunition // Pass ammunition details
                         },
-                        success: function(data) {
-                            console.log(data);
-                            if (data == 1) {
+                        success: function(response) {
+                            // console.log(data);
+                            if (response.success) {
                                 alert('Weapon Issue Successfully');
                                 window.location.reload();
-                                //   window.close();
                             } else {
                                 alert('Failed to submit data');
                             }
@@ -903,7 +1005,8 @@
                 }
             });
 
-    });
+
+});
 </script>
 
 <script>
